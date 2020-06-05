@@ -17,18 +17,16 @@ consumer_secret = config["twitter"]["consumer_secret"]
 access_token = config["twitter"]["access_token"]
 access_token_secret = config["twitter"]["access_token_secret"]
 
-
 producer = KafkaProducer(bootstrap_servers=[f'{kafka_host}:{kafka_port}'],
                          value_serializer=lambda x: dumps(x).encode('utf-8'))
 
-
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth,wait_on_rate_limit=True)
+api = tweepy.API(auth, wait_on_rate_limit=True)
 
-for tweet in tweepy.Cursor(api.search,q="#food",lang="en").items():
-    print("inserting to kafka:", tweet.text)
-    producer.send(topic=twitter_to_kafka_topic, value=tweet.text)
+for tweet in tweepy.Cursor(api.search, q="#food", lang="en").items():
+    print("inserting to kafka:", tweet.text.lower())
+    producer.send(topic=twitter_to_kafka_topic, value=tweet.text.lower())
     sleep(3)
 
 producer.flush()
